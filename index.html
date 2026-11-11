@@ -8,19 +8,26 @@
 </head>
 <body>
   <header class="topbar">
-    <div>
+    <div class="brand">
       <div class="eyebrow">TRACKING INDEPENDIENTE</div>
       <h1>Python → .NET Migration Tracker</h1>
-      <p>No forma parte de PetData. Es una herramienta paralela de control.</p>
+      <p>Control paralelo de avance · 495 contratos Python</p>
     </div>
     <div class="actions">
-      <button id="exportBtn">Exportar estado</button>
-      <label class="button secondary">Importar estado<input id="importInput" type="file" accept=".json" hidden></label>
-      <button id="resetBtn" class="danger">Reiniciar checks</button>
+      <button id="lockBtn" class="secondary">🔒 Modo lectura</button>
+      <button id="saveBtn" disabled>Guardar cambios</button>
+      <button id="exportBtn" class="ghost">Exportar</button>
+      <label class="button ghost">Importar<input id="importInput" type="file" accept=".json" hidden></label>
+      <button id="resetBtn" class="danger" disabled>Reiniciar</button>
     </div>
   </header>
 
   <main class="container">
+    <div id="editBanner" class="edit-banner locked">
+      <strong>Modo lectura.</strong>
+      <span>Desbloquea la edición para modificar checks. Los cambios no se guardan hasta presionar <b>Guardar cambios</b>.</span>
+    </div>
+
     <section class="summary-grid">
       <article class="metric primary">
         <span>Total jerárquico</span>
@@ -29,18 +36,18 @@
       </article>
       <article class="metric">
         <span>Endpoints terminados</span>
-        <strong id="doneCount">0 / 0</strong>
+        <strong id="doneCount">0 / 495</strong>
         <small id="rawPct">0.00% bruto</small>
       </article>
       <article class="metric">
         <span>Grupos completos</span>
-        <strong id="groupsDone">0 / 0</strong>
+        <strong id="groupsDone">0 / 12</strong>
         <small>cada grupo pesa igual</small>
       </article>
       <article class="metric">
-        <span>Última modificación</span>
+        <span>Último guardado</span>
         <strong id="lastUpdate">—</strong>
-        <small>guardado localmente</small>
+        <small id="dirtyStatus">Sin cambios pendientes</small>
       </article>
     </section>
 
@@ -55,23 +62,29 @@
     </section>
 
     <section class="group-overview">
-      <h2>Avance por grupo</h2>
+      <div class="section-title">
+        <div>
+          <h2>Avance por grupo</h2>
+          <p>Haz clic en una tarjeta para abrir ese grupo.</p>
+        </div>
+        <button id="closeAllBtn" class="small secondary">Cerrar todos</button>
+      </div>
       <div id="groupCards" class="group-cards"></div>
     </section>
 
     <section class="table-section">
       <div class="table-head">
         <div>
-          <h2>Endpoints</h2>
-          <p>Marca <b>Terminado</b> cuando el endpoint quede cerrado.</p>
+          <h2>Detalle de endpoints</h2>
+          <p>Todos los grupos parten cerrados. Abre uno para revisar y marcar sus endpoints.</p>
         </div>
       </div>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Grupo</th>
-              <th>Subgrupo</th>
+              <th style="width:34px"></th>
+              <th>Grupo / Subgrupo</th>
               <th>Método</th>
               <th>Endpoint</th>
               <th>Estado</th>
@@ -83,6 +96,8 @@
       </div>
     </section>
   </main>
+
+  <div id="toast" class="toast" role="status"></div>
 
   <script src="tracking-data.js"></script>
   <script src="app.js"></script>
