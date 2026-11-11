@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Tracking Python → .NET</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">TRACKING INDEPENDIENTE</div>
+      <h1>Python → .NET Migration Tracker</h1>
+      <p>No forma parte de PetData. Es una herramienta paralela de control.</p>
+    </div>
+    <div class="actions">
+      <button id="exportBtn">Exportar estado</button>
+      <label class="button secondary">Importar estado<input id="importInput" type="file" accept=".json" hidden></label>
+      <button id="resetBtn" class="danger">Reiniciar checks</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="summary-grid">
+      <article class="metric primary">
+        <span>Total jerárquico</span>
+        <strong id="totalPct">0.00%</strong>
+        <div class="bar"><i id="totalBar"></i></div>
+      </article>
+      <article class="metric">
+        <span>Endpoints terminados</span>
+        <strong id="doneCount">0 / 0</strong>
+        <small id="rawPct">0.00% bruto</small>
+      </article>
+      <article class="metric">
+        <span>Grupos completos</span>
+        <strong id="groupsDone">0 / 0</strong>
+        <small>cada grupo pesa igual</small>
+      </article>
+      <article class="metric">
+        <span>Última modificación</span>
+        <strong id="lastUpdate">—</strong>
+        <small>guardado localmente</small>
+      </article>
+    </section>
+
+    <section class="controls">
+      <input id="search" type="search" placeholder="Buscar endpoint, grupo o subgrupo…">
+      <select id="groupFilter"><option value="">Todos los grupos</option></select>
+      <select id="statusFilter">
+        <option value="">Todos los estados</option>
+        <option value="done">Terminados</option>
+        <option value="pending">Pendientes</option>
+      </select>
+    </section>
+
+    <section class="group-overview">
+      <h2>Avance por grupo</h2>
+      <div id="groupCards" class="group-cards"></div>
+    </section>
+
+    <section class="table-section">
+      <div class="table-head">
+        <div>
+          <h2>Endpoints</h2>
+          <p>Marca <b>Terminado</b> cuando el endpoint quede cerrado.</p>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Grupo</th>
+              <th>Subgrupo</th>
+              <th>Método</th>
+              <th>Endpoint</th>
+              <th>Estado</th>
+              <th class="center">Terminado</th>
+            </tr>
+          </thead>
+          <tbody id="endpointTable"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="tracking-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
