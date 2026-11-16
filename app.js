@@ -8,10 +8,19 @@
   let dirty = false;
   let openGroup = null;
 
+  // Cobertura publicada: 47 rutas de Agenda tienen handlers registrados en .NET.
+  // Las tres rutas de recepcion (ep-55, ep-56 y ep-58) no estan implementadas.
+  // CHECK = implementacion declarada; NO certifica paridad funcional ni QA.
+  const AGENDA_RECEPCION_PENDIENTE = new Set(["ep-55", "ep-56", "ep-58"]);
+
   function defaultState() {
     const done = {};
     const auth = DATA.groups.find(g => g.name === "Autenticación");
     if (auth) auth.subgroups.forEach(s => s.endpoints.forEach(e => done[e.id] = true));
+    const agenda = DATA.groups.find(g => g.name === "Agenda");
+    if (agenda) agenda.subgroups.forEach(s => s.endpoints.forEach(e => {
+      if (!AGENDA_RECEPCION_PENDIENTE.has(e.id)) done[e.id] = true;
+    }));
     return { done, updatedAt: null };
   }
 
@@ -20,7 +29,11 @@
       const raw = localStorage.getItem(KEY);
       if (!raw) return defaultState();
       const parsed = JSON.parse(raw);
-      return parsed && parsed.done ? parsed : defaultState();
+      // Incorporar la cobertura publicada sin sobrescribir decisiones locales
+      // explicitamente guardadas (true o false).
+      if (!parsed || !parsed.done || typeof parsed.done !== "object") return defaultState();
+      const base = defaultState();
+      return { ...base, ...parsed, done: { ...base.done, ...parsed.done } };
     } catch {
       return defaultState();
     }
@@ -303,7 +316,7 @@
   });
   $("resetBtn").addEventListener("click",()=>{
     if(!editing)return;
-    if(!confirm("¿Reiniciar todos los checks al estado base? Auth quedará marcado y el resto pendiente."))return;
+    if(!confirm("¿Reiniciar todos los checks al estado base publicado? Autenticación y 47 rutas de Agenda quedarán marcadas; recepción seguirá pendiente."))return;
     draftState=defaultState();
     dirty=true;
     renderAll();
