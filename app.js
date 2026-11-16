@@ -12,6 +12,21 @@
   // Las tres rutas de recepcion (ep-55, ep-56 y ep-58) no estan implementadas.
   // CHECK = implementacion declarada; NO certifica paridad funcional ni QA.
   const AGENDA_RECEPCION_PENDIENTE = new Set(["ep-55", "ep-56", "ep-58"]);
+  const AGENDA_PUBLICACION_VERSION = 1;
+
+  // Aplicar UNA sola vez el avance publicado de Agenda en navegadores que ya
+  // guardaron estados antiguos. Cambios posteriores del usuario se respetan.
+  function migrarAgendaPublicada(estado) {
+    if ((estado.agendaPublicacionVersion || 0) >= AGENDA_PUBLICACION_VERSION) return estado;
+    const agenda = DATA.groups.find(g => g.name === "Agenda");
+    if (!agenda) return estado;
+    agenda.subgroups.forEach(sub => sub.endpoints.forEach(ep => {
+      estado.done[ep.id] = !AGENDA_RECEPCION_PENDIENTE.has(ep.id);
+    }));
+    estado.agendaPublicacionVersion = AGENDA_PUBLICACION_VERSION;
+    try { localStorage.setItem(KEY, JSON.stringify(estado)); } catch {}
+    return estado;
+  }
 
   function defaultState() {
     const done = {};
@@ -27,15 +42,15 @@
   function loadSavedState() {
     try {
       const raw = localStorage.getItem(KEY);
-      if (!raw) return defaultState();
+      if (!raw) return migrarAgendaPublicada(defaultState());
       const parsed = JSON.parse(raw);
       // Incorporar la cobertura publicada sin sobrescribir decisiones locales
       // explicitamente guardadas (true o false).
-      if (!parsed || !parsed.done || typeof parsed.done !== "object") return defaultState();
+      if (!parsed || !parsed.done || typeof parsed.done !== "object") return migrarAgendaPublicada(defaultState());
       const base = defaultState();
-      return { ...base, ...parsed, done: { ...base.done, ...parsed.done } };
+      return migrarAgendaPublicada({ ...base, ...parsed, done: { ...base.done, ...parsed.done } });
     } catch {
-      return defaultState();
+      return migrarAgendaPublicada(defaultState());
     }
   }
 
