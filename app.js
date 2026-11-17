@@ -204,7 +204,6 @@
       if (cardNote) card.appendChild(cardNote);
       card.addEventListener("click",()=>{
         openGroup=openGroup===g.name?null:g.name;
-        $("groupFilter").value=openGroup||"";
         renderAll();
         document.querySelector(".table-section").scrollIntoView({behavior:"smooth",block:"start"});
       });
@@ -212,35 +211,12 @@
     });
   }
 
-  function renderGroupFilter(){
-    const sel=$("groupFilter");
-    if(sel.options.length>1)return;
-    DATA.groups.forEach(g=>{
-      const o=document.createElement("option");
-      o.value=g.name;o.textContent=g.name;sel.appendChild(o);
-    });
-  }
-
-  function endpointMatches(g,s,e){
-    const q=$("search").value.trim().toLowerCase();
-    const sf=$("statusFilter").value;
-    const done=!!state().done[e.id];
-    if(sf==="done"&&!done)return false;
-    if(sf==="pending"&&done)return false;
-    if(!q)return true;
-    return [g.name,s.name,e.method,e.path].some(v=>v.toLowerCase().includes(q));
-  }
-
   function renderTable(){
-    const gf=$("groupFilter").value;
     const tbody=$("endpointTable"); tbody.innerHTML="";
     let any=false;
 
     DATA.groups.forEach(g=>{
-      if(gf && g.name!==gf)return;
 
-      const hasVisible=g.subgroups.some(s=>s.endpoints.some(e=>endpointMatches(g,s,e)));
-      if(!hasVisible)return;
       any=true;
 
       const expanded=openGroup===g.name;
@@ -263,7 +239,7 @@
       if(!expanded)return;
 
       g.subgroups.forEach(s=>{
-        const visible=s.endpoints.filter(e=>endpointMatches(g,s,e));
+        const visible=s.endpoints;
         if(!visible.length)return;
 
         const sh=document.createElement("tr");
@@ -386,12 +362,6 @@
     if (event.target === $("groupNoteDialog")) $("groupNoteDialog").close();
   });
 
-  $("search").addEventListener("input",renderTable);
-  $("groupFilter").addEventListener("change",e=>{
-    openGroup=e.target.value||null;
-    renderAll();
-  });
-  $("statusFilter").addEventListener("change",renderTable);
   $("lockBtn").addEventListener("click",unlock);
   $("saveBtn").addEventListener("click",saveChanges);
   $("exportBtn").addEventListener("click",exportState);
@@ -409,7 +379,6 @@
   });
   $("closeAllBtn").addEventListener("click",()=>{
     openGroup=null;
-    $("groupFilter").value="";
     renderAll();
   });
 
@@ -419,6 +388,5 @@
     e.returnValue="";
   });
 
-  renderGroupFilter();
   renderAll();
 })();
