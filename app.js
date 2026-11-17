@@ -8,6 +8,60 @@
   let dirty = false;
   let openGroup = null;
 
+  // Notas por modulo, independientes de los checks y disponibles en modo lectura.
+  const GROUP_NOTES = {
+    "Dashboard": {
+      title: "Dashboard · cierre",
+      paragraphs: [
+        "100 % — CERRADO (6/6 GET) por decisión del responsable del proyecto.",
+        "Última corrección: eliminación de ruta duplicada en GET /api/dashboard.",
+        "No equivale a una certificación independiente de pruebas integradas."
+      ]
+    },
+    "Agenda": {
+      title: "Agenda · estado de migración",
+      paragraphs: [
+        "47 de 50 métodos HTTP tienen implementación registrada en .NET.",
+        "Pendientes: POST/PATCH de recibir y POST de confirmar ingreso.",
+        "Los checks reflejan cobertura de implementación, no certificación de pruebas, paridad funcional ni cierre del módulo.",
+        "Las preferencias guardadas en este navegador tienen prioridad sobre la cobertura publicada."
+      ]
+    }
+  };
+  let previousNoteFocus = null;
+
+  function openNote(groupName) {
+    const note = GROUP_NOTES[groupName];
+    if (!note) return;
+    const modal = $("groupNoteDialog");
+    $("groupNoteTitle").textContent = note.title;
+    const content = $("groupNoteBody");
+    content.replaceChildren();
+    note.paragraphs.forEach(paragraph => {
+      const p = document.createElement("p");
+      p.textContent = paragraph;
+      content.appendChild(p);
+    });
+    previousNoteFocus = document.activeElement;
+    if (typeof modal.showModal === "function") modal.showModal();
+    else modal.setAttribute("open", "");
+    $("groupNoteClose").focus();
+  }
+
+  function noteButton(groupName) {
+    if (!GROUP_NOTES[groupName]) return null;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "note-link";
+    button.textContent = "Ver nota";
+    button.setAttribute("aria-label", "Ver nota de " + groupName);
+    button.addEventListener("click", event => {
+      event.stopPropagation();
+      openNote(groupName);
+    });
+    return button;
+  }
+
   // Cobertura publicada: 47 rutas de Agenda tienen handlers registrados en .NET.
   // Las tres rutas de recepcion (ep-55, ep-56 y ep-58) no estan implementadas.
   // CHECK = implementacion declarada; NO certifica paridad funcional ni QA.
@@ -111,24 +165,9 @@
   }
 
   function updateEditUI(){
-    const banner=$("editBanner");
-    const lockBtn=$("lockBtn");
-    const saveBtn=$("saveBtn");
-    const resetBtn=$("resetBtn");
-
-    saveBtn.disabled=!editing || !dirty;
-    resetBtn.disabled=!editing;
-
-    banner.className="edit-banner " + (dirty ? "dirty" : editing ? "unlocked" : "locked");
-
-    if (dirty) {
-      banner.innerHTML="<strong>Cambios sin guardar.</strong><span>Presiona <b>Guardar cambios</b> para hacerlos persistentes.</span>";
-    } else if (editing) {
-      banner.innerHTML="<strong>Edición habilitada.</strong><span>Puedes modificar checks. Nada se guarda hasta presionar <b>Guardar cambios</b>.</span>";
-    } else {
-      banner.innerHTML="<strong>Modo lectura.</strong><span>Desbloquea la edición para modificar checks. Los cambios no se guardan hasta presionar <b>Guardar cambios</b>.</span>";
-    }
-
+    const lockBtn = $("lockBtn");
+    $("saveBtn").disabled = !editing || !dirty;
+    $("resetBtn").disabled = !editing;
     lockBtn.textContent = editing ? "🔓 Edición habilitada" : "🔒 Modo lectura";
     $("dirtyStatus").textContent = dirty ? "Cambios pendientes de guardar" : "Sin cambios pendientes";
   }
@@ -161,6 +200,8 @@
         <div class="pct">${pct(p)}</div>
         <div class="bar"><i style="width:${pct(p)}"></i></div>
         <div class="meta">${done}/${eps.length} endpoints · ${g.subgroups.length} subgrupos</div>`;
+      const cardNote = noteButton(g.name);
+      if (cardNote) card.appendChild(cardNote);
       card.addEventListener("click",()=>{
         openGroup=openGroup===g.name?null:g.name;
         $("groupFilter").value=openGroup||"";
@@ -211,6 +252,8 @@
       gh.className="group-row";
       gh.innerHTML=`<td class="center"><span class="group-toggle">${expanded?"▼":"▶"}</span></td>
         <td colspan="5">${esc(g.name)} · ${pct(gp)} · ${doneCount}/${eps.length} endpoints</td>`;
+      const rowNote = noteButton(g.name);
+      if (rowNote) gh.querySelector("td[colspan]").appendChild(rowNote);
       gh.addEventListener("click",()=>{
         openGroup=expanded?null:g.name;
         renderAll();
@@ -333,6 +376,15 @@
     };
     reader.readAsText(file);
   }
+
+  $("groupNoteClose").addEventListener("click", () => $("groupNoteDialog").close());
+  $("groupNoteDialog").addEventListener("close", () => {
+    if (previousNoteFocus && previousNoteFocus.isConnected) previousNoteFocus.focus();
+    previousNoteFocus = null;
+  });
+  $("groupNoteDialog").addEventListener("click", event => {
+    if (event.target === $("groupNoteDialog")) $("groupNoteDialog").close();
+  });
 
   $("search").addEventListener("input",renderTable);
   $("groupFilter").addEventListener("change",e=>{
