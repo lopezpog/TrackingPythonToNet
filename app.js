@@ -13,6 +13,20 @@
   // CHECK = implementacion declarada; NO certifica paridad funcional ni QA.
   const AGENDA_RECEPCION_PENDIENTE = new Set(["ep-55", "ep-56", "ep-58"]);
   const AGENDA_PUBLICACION_VERSION = 1;
+  const DASHBOARD_PUBLICACION_VERSION = 1;
+
+  // Dashboard: seis rutas GET publicadas en .NET (implementacion, no QA).
+  function migrarDashboardPublicado(estado) {
+    if ((estado.dashboardPublicacionVersion || 0) >= DASHBOARD_PUBLICACION_VERSION) return estado;
+    const grupo = DATA.groups.find(g => g.name === "Dashboard");
+    if (grupo) grupo.subgroups.forEach(sub => sub.endpoints.forEach(ep => {
+      estado.done[ep.id] = true;
+    }));
+    estado.dashboardPublicacionVersion = DASHBOARD_PUBLICACION_VERSION;
+    try { localStorage.setItem(KEY, JSON.stringify(estado)); } catch {}
+    return estado;
+  }
+
 
   // Aplicar UNA sola vez el avance publicado de Agenda en navegadores que ya
   // guardaron estados antiguos. Cambios posteriores del usuario se respetan.
@@ -32,6 +46,10 @@
     const done = {};
     const auth = DATA.groups.find(g => g.name === "Autenticación");
     if (auth) auth.subgroups.forEach(s => s.endpoints.forEach(e => done[e.id] = true));
+    const dashboard = DATA.groups.find(g => g.name === "Dashboard");
+    if (dashboard) dashboard.subgroups.forEach(sub => sub.endpoints.forEach(ep => {
+      done[ep.id] = true;
+    }));
     const agenda = DATA.groups.find(g => g.name === "Agenda");
     if (agenda) agenda.subgroups.forEach(s => s.endpoints.forEach(e => {
       if (!AGENDA_RECEPCION_PENDIENTE.has(e.id)) done[e.id] = true;
@@ -42,13 +60,13 @@
   function loadSavedState() {
     try {
       const raw = localStorage.getItem(KEY);
-      if (!raw) return migrarAgendaPublicada(defaultState());
+      if (!raw) return migrarDashboardPublicado(migrarAgendaPublicada(defaultState()));
       const parsed = JSON.parse(raw);
       // Incorporar la cobertura publicada sin sobrescribir decisiones locales
       // explicitamente guardadas (true o false).
       if (!parsed || !parsed.done || typeof parsed.done !== "object") return migrarAgendaPublicada(defaultState());
       const base = defaultState();
-      return migrarAgendaPublicada({ ...base, ...parsed, done: { ...base.done, ...parsed.done } });
+      return migrarDashboardPublicado(migrarAgendaPublicada({ ...base, ...parsed, done: { ...base.done, ...parsed.done } }));
     } catch {
       return migrarAgendaPublicada(defaultState());
     }
@@ -331,7 +349,7 @@
   });
   $("resetBtn").addEventListener("click",()=>{
     if(!editing)return;
-    if(!confirm("¿Reiniciar todos los checks al estado base publicado? Autenticación y 47 rutas de Agenda quedarán marcadas; recepción seguirá pendiente."))return;
+    if(!confirm("¿Reiniciar los checks al estado base publicado? Autenticación, Dashboard y 47 rutas de Agenda quedarán marcados; recepción seguirá pendiente."))return;
     draftState=defaultState();
     dirty=true;
     renderAll();
