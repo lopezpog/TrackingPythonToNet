@@ -271,7 +271,7 @@
     if(!any){
       const tr=document.createElement("tr");
       tr.className="empty-row";
-      tr.innerHTML='<td colspan="6">No hay endpoints que coincidan con los filtros.</td>';
+      tr.innerHTML='<td colspan="6">No hay endpoints disponibles.</td>';
       tbody.appendChild(tr);
     }
   }
