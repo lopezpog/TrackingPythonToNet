@@ -31,3 +31,17 @@ tr.done{background:var(--ok-soft)}.method{display:inline-block;min-width:62px;te
 
 .tracking-note{margin:0 0 16px;padding:0 2px;color:var(--muted);font-size:12px;line-height:1.6}
 .tracking-note strong{color:var(--text)}
+
+/* Notas discretas por grupo: la lectura no requiere desbloquear la edición. */
+.note-link{display:inline-flex;align-items:center;gap:4px;padding:2px 0;margin-top:8px;background:transparent;border:0;border-radius:0;color:var(--primary);font-size:12px;font-weight:750;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.note-link:hover{color:#153b9a}
+.note-link:focus-visible,.group-note-close:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+.group-row .note-link{margin:0 0 0 14px;font-size:12px;font-weight:700}
+.group-note-dialog{width:min(520px,calc(100vw - 28px));max-height:min(75vh,700px);border:1px solid var(--line);border-radius:14px;padding:0;background:var(--panel);color:var(--text);box-shadow:0 24px 80px #0f172a4d}
+.group-note-dialog::backdrop{background:#10182885}
+.group-note-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px 12px;border-bottom:1px solid var(--line)}
+.group-note-head h2{font-size:19px;margin:0}
+.group-note-close{background:transparent;color:var(--muted);padding:1px 8px;font-size:26px;font-weight:400;line-height:1.2}
+.group-note-close:hover{background:#eef2f7;color:var(--text)}
+.group-note-body{padding:12px 20px 20px;font-size:14px;line-height:1.65;overflow:auto}
+.group-note-body p{margin:8px 0 12px}
