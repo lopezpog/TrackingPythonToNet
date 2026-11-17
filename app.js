@@ -13,9 +13,10 @@
   // CHECK = implementacion declarada; NO certifica paridad funcional ni QA.
   const AGENDA_RECEPCION_PENDIENTE = new Set(["ep-55", "ep-56", "ep-58"]);
   const AGENDA_PUBLICACION_VERSION = 1;
-  const DASHBOARD_PUBLICACION_VERSION = 1;
+  const DASHBOARD_PUBLICACION_VERSION = 2;
 
-  // Dashboard: seis rutas GET publicadas en .NET (implementacion, no QA).
+  // Dashboard cerrado a 6/6 por solicitud del responsable del proyecto.
+  // Nueva version del estado publicado para aplicar el cierre incluso si hay checks antiguos.
   function migrarDashboardPublicado(estado) {
     if ((estado.dashboardPublicacionVersion || 0) >= DASHBOARD_PUBLICACION_VERSION) return estado;
     const grupo = DATA.groups.find(g => g.name === "Dashboard");
