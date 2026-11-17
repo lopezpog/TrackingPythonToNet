@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Tracking Python → .NET</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=group-notes-20261117">
 </head>
 <body>
   <header class="topbar">
@@ -23,14 +23,6 @@
   </header>
 
   <main class="container">
-    <div id="editBanner" class="edit-banner locked">
-      <strong>Modo lectura.</strong>
-      <span>Desbloquea la edición para modificar checks. Los cambios no se guardan hasta presionar <b>Guardar cambios</b>.</span>
-    </div>
-
-    <p class="tracking-note"><strong>Dashboard:</strong> <strong>100 % — CERRADO (6/6 GET)</strong> por decisión del responsable del proyecto. Última corrección: eliminación de ruta duplicada en <code>GET /api/dashboard</code>. No equivale a una certificación independiente de pruebas integradas.</p>
-    <p class="tracking-note"><strong>Agenda:</strong> 47 de 50 métodos HTTP tienen implementación registrada en .NET. Pendientes: POST/PATCH de recibir y POST de confirmar ingreso. Los checks reflejan cobertura de implementación, <strong>no certificación de pruebas, paridad funcional ni cierre del módulo</strong>. Las preferencias guardadas en este navegador tienen prioridad sobre la cobertura publicada.</p>
-
     <section class="summary-grid">
       <article class="metric primary">
         <span>Total jerárquico</span>
@@ -100,9 +92,17 @@
     </section>
   </main>
 
+  <dialog id="groupNoteDialog" class="group-note-dialog" aria-labelledby="groupNoteTitle">
+    <div class="group-note-head">
+      <h2 id="groupNoteTitle"></h2>
+      <button id="groupNoteClose" class="group-note-close" type="button" aria-label="Cerrar nota">×</button>
+    </div>
+    <div id="groupNoteBody" class="group-note-body"></div>
+  </dialog>
+
   <div id="toast" class="toast" role="status"></div>
 
   <script src="tracking-data.js"></script>
-  <script src="app.js?v=dashboard-cierre-20261117-2"></script>
+  <script src="app.js?v=group-notes-20261117"></script>
 </body>
 </html>
