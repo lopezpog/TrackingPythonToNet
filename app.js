@@ -18,6 +18,14 @@
         "No equivale a una certificación independiente de pruebas integradas."
       ]
     },
+    "System Config": {
+      title: "System Config · nuevo módulo",
+      paragraphs: [
+        "9 de 9 rutas HTTP están registradas como endpoints nativos .NET en /api/sistema.",
+        "Se conservaron los parámetros de folios, reglas de retención, publicación de resultados, seguridad clínica y marcas patológicas.",
+        "Los 9 checks se dejan inicialmente pendientes: requieren compilación, validación con PostgreSQL y contraste de respuestas frente a Python antes de aprobarlos."
+      ]
+    },
     "Agenda": {
       title: "Agenda · estado de migración",
       paragraphs: [
