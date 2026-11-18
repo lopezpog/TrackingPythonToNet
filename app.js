@@ -27,6 +27,30 @@
         "Antes del cierre al 100 % deben validarse también permisos root, resolución global/por centro y protección de numeración cuando existen folios emitidos. El QA de pantalla no equivale a la validación de todo el módulo."
       ]
     },
+    "Pacientes y ficha clínica": {
+      title: "Pacientes y ficha clínica · migración .NET",
+      paragraphs: [
+        "23/46 rutas registradas: 6 endpoints de /api/pacientes y 17 de /api/fichaclinica. Los endpoints de /api/ficha (ficha de orden), tutores y vacunas mantienen seguimiento independiente.",
+        "La ficha clínica usa el centro del JWT, el correlativo PostgreSQL y transacciones para crear, editar y cambiar estado.",
+        "Cobertura de implementación; falta completar QA en Visual Studio y PostgreSQL para certificar paridad funcional."
+      ]
+    },
+    "Laboratorio": {
+      title: "Laboratorio · endpoints compartidos",
+      paragraphs: [
+        "2/20 rutas registradas como lecturas nativas .NET: GET /api/laboratorio/bandeja y GET /api/laboratorio/ordenes/{orden_id}.",
+        "La bandeja se utiliza desde Informes de pacientes; el detalle devuelve orden, tubos, pruebas, rechazos, eventos, resumen y permisos.",
+        "No se migraron las escrituras, validación, resultados ni todo Laboratorio. Compilación y pruebas integradas aún pendientes."
+      ]
+    },
+    "Informes y reportes": {
+      title: "Informes · endpoints de visualización",
+      paragraphs: [
+        "3/24 contratos Python con handlers .NET registrados: GET /api/informe, GET /api/informes/{orden_uid}/datos y GET /api/informes/{orden_uid}/datos/verificar.",
+        "El formato activo se resuelve por centro. Los datos clínicos se construyen desde PostgreSQL con resultados, validaciones, grupos, paciente, tutor y centro.",
+        "Existe también un alias /verificar usado por Angular que no suma un contrato Python. No equivale al motor de PDF completo ni a un QA certificado."
+      ]
+    },
     "Agenda": {
       title: "Agenda · estado de migración",
       paragraphs: [
@@ -80,6 +104,22 @@
   // System Config: solo las dos rutas ejercitadas por el QA del usuario.
   const SISTEMA_QA_BASICO_IDS = ["ep-498", "ep-500"];
   const SISTEMA_PUBLICACION_VERSION = 1;
+  // Cobertura de migracion por modulo; publicada una vez para no revertir
+  // los cambios manuales que guarde posteriormente el responsable.
+  const COBERTURA_MODULOS_V1 = [
+    ...Array.from({length:6},(_,i)=>"ep-"+(60+i)), // pacientes
+    ...Array.from({length:17},(_,i)=>"ep-"+(89+i)), // ficha clinica paciente
+    "ep-156", "ep-158", // bandeja y orden completa de laboratorio
+    "ep-194", "ep-201", "ep-202" // formatos y datos de informes
+  ];
+  const COBERTURA_MODULOS_VERSION = 1;
+  function migrarCoberturaModulos(estado) {
+    if((estado.coberturaModulosVersion||0)>=COBERTURA_MODULOS_VERSION)return estado;
+    COBERTURA_MODULOS_V1.forEach(id=>{estado.done[id]=true;});
+    estado.coberturaModulosVersion=COBERTURA_MODULOS_VERSION;
+    try{localStorage.setItem(KEY,JSON.stringify(estado));}catch{}
+    return estado;
+  }
 
   // Se ejecuta una sola vez en navegadores con estados antiguos. No se
   // sobrescriben decisiones manuales posteriores a esta publicacion.
@@ -132,12 +172,14 @@
       if (!AGENDA_RECEPCION_PENDIENTE.has(e.id)) done[e.id] = true;
     }));
     SISTEMA_QA_BASICO_IDS.forEach(id => { done[id] = true; });
+    COBERTURA_MODULOS_V1.forEach(id=>{done[id]=true;});
     return { done, updatedAt: null };
   }
 
   function loadSavedState() {
     const migrarPublicaciones = estado =>
-      migrarSistemaPublicado(migrarDashboardPublicado(migrarAgendaPublicada(estado)));
+      migrarCoberturaModulos(migrarSistemaPublicado(
+        migrarDashboardPublicado(migrarAgendaPublicada(estado))));
     try {
       const raw = localStorage.getItem(KEY);
       if (!raw) return migrarPublicaciones(defaultState());
