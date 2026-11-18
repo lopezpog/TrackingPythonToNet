@@ -19,11 +19,12 @@
       ]
     },
     "System Config": {
-      title: "System Config · nuevo módulo",
+      title: "System Config · QA básico",
       paragraphs: [
-        "9 de 9 rutas HTTP están registradas como endpoints nativos .NET en /api/sistema.",
-        "Se conservaron los parámetros de folios, reglas de retención, publicación de resultados, seguridad clínica y marcas patológicas.",
-        "Los 9 checks se dejan inicialmente pendientes: requieren compilación, validación con PostgreSQL y contraste de respuestas frente a Python antes de aprobarlos."
+        "9 de 9 endpoints registrados en .NET; 2 de 9 comprobados en el QA básico informado.",
+        "Comprobados: GET /api/sistema/current (lectura) y PUT /api/sistema/{config_id} (edición y guardado). La pantalla confirma el guardado y el backend devuelve HTTP 200.",
+        "Pendientes: GET de listado, GET por ID, GET resolve, POST de creación, PATCH de activar, PATCH de desactivar y DELETE lógico.",
+        "Antes del cierre al 100 % deben validarse también permisos root, resolución global/por centro y protección de numeración cuando existen folios emitidos. El QA de pantalla no equivale a la validación de todo el módulo."
       ]
     },
     "Agenda": {
@@ -76,6 +77,19 @@
   const AGENDA_RECEPCION_PENDIENTE = new Set(["ep-55", "ep-56", "ep-58"]);
   const AGENDA_PUBLICACION_VERSION = 1;
   const DASHBOARD_PUBLICACION_VERSION = 2;
+  // System Config: solo las dos rutas ejercitadas por el QA del usuario.
+  const SISTEMA_QA_BASICO_IDS = ["ep-498", "ep-500"];
+  const SISTEMA_PUBLICACION_VERSION = 1;
+
+  // Se ejecuta una sola vez en navegadores con estados antiguos. No se
+  // sobrescriben decisiones manuales posteriores a esta publicacion.
+  function migrarSistemaPublicado(estado) {
+    if ((estado.sistemaPublicacionVersion || 0) >= SISTEMA_PUBLICACION_VERSION) return estado;
+    SISTEMA_QA_BASICO_IDS.forEach(id => { estado.done[id] = true; });
+    estado.sistemaPublicacionVersion = SISTEMA_PUBLICACION_VERSION;
+    try { localStorage.setItem(KEY, JSON.stringify(estado)); } catch {}
+    return estado;
+  }
 
   // Dashboard cerrado a 6/6 por solicitud del responsable del proyecto.
   // Nueva version del estado publicado para aplicar el cierre incluso si hay checks antiguos.
@@ -117,21 +131,24 @@
     if (agenda) agenda.subgroups.forEach(s => s.endpoints.forEach(e => {
       if (!AGENDA_RECEPCION_PENDIENTE.has(e.id)) done[e.id] = true;
     }));
+    SISTEMA_QA_BASICO_IDS.forEach(id => { done[id] = true; });
     return { done, updatedAt: null };
   }
 
   function loadSavedState() {
+    const migrarPublicaciones = estado =>
+      migrarSistemaPublicado(migrarDashboardPublicado(migrarAgendaPublicada(estado)));
     try {
       const raw = localStorage.getItem(KEY);
-      if (!raw) return migrarDashboardPublicado(migrarAgendaPublicada(defaultState()));
+      if (!raw) return migrarPublicaciones(defaultState());
       const parsed = JSON.parse(raw);
-      // Incorporar la cobertura publicada sin sobrescribir decisiones locales
-      // explicitamente guardadas (true o false).
-      if (!parsed || !parsed.done || typeof parsed.done !== "object") return migrarAgendaPublicada(defaultState());
+      // Respetar checks modificados manualmente luego de la migracion inicial.
+      if (!parsed || !parsed.done || typeof parsed.done !== "object")
+        return migrarPublicaciones(defaultState());
       const base = defaultState();
-      return migrarDashboardPublicado(migrarAgendaPublicada({ ...base, ...parsed, done: { ...base.done, ...parsed.done } }));
+      return migrarPublicaciones({ ...base, ...parsed, done: { ...base.done, ...parsed.done } });
     } catch {
-      return migrarAgendaPublicada(defaultState());
+      return migrarPublicaciones(defaultState());
     }
   }
 
@@ -350,7 +367,7 @@
       try{
         const parsed=JSON.parse(reader.result);
         if(!parsed.done||typeof parsed.done!=="object")throw new Error("Formato inválido");
-        draftState={done:parsed.done,updatedAt:savedState.updatedAt};
+        draftState={...savedState,done:parsed.done,updatedAt:savedState.updatedAt};
         dirty=true;
         renderAll();
         showToast("Estado importado como borrador");
