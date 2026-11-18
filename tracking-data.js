@@ -1,6 +1,6 @@
 window.TRACKING_DATA = {
   "version": 1,
-  "baseline": 495,
+  "baseline": 504,
   "technicalEndpoint": "GET /",
   "groups": [
     {
@@ -1298,6 +1298,66 @@ window.TRACKING_DATA = {
               "method": "POST",
               "path": "/api/engine-informe/ordenes/<order_id>/encolar",
               "id": "ep-216"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "System Config",
+      "subgroups": [
+        {
+          "name": "Lectura y resolución",
+          "endpoints": [
+            {
+              "method": "GET",
+              "path": "/api/sistema",
+              "id": "ep-495"
+            },
+            {
+              "method": "GET",
+              "path": "/api/sistema/<config_id>",
+              "id": "ep-496"
+            },
+            {
+              "method": "GET",
+              "path": "/api/sistema/resolve/<establecimiento_id>",
+              "id": "ep-497"
+            },
+            {
+              "method": "GET",
+              "path": "/api/sistema/current",
+              "id": "ep-498"
+            }
+          ]
+        },
+        {
+          "name": "Administración de sistema (root)",
+          "endpoints": [
+            {
+              "method": "POST",
+              "path": "/api/sistema",
+              "id": "ep-499"
+            },
+            {
+              "method": "PUT",
+              "path": "/api/sistema/<config_id>",
+              "id": "ep-500"
+            },
+            {
+              "method": "PATCH",
+              "path": "/api/sistema/<config_id>/activar",
+              "id": "ep-501"
+            },
+            {
+              "method": "PATCH",
+              "path": "/api/sistema/<config_id>/desactivar",
+              "id": "ep-502"
+            },
+            {
+              "method": "DELETE",
+              "path": "/api/sistema/<config_id>",
+              "id": "ep-503"
             }
           ]
         }
